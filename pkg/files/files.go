@@ -19,7 +19,7 @@ func RenameAll(newExt string) {
 	for _, file := range allFiles {
 		oldExt := getExtension(file)
 		newName := getNewName(file, oldExt, newExt)
-		rename(file, newName)
+		renameComplex(file, newName)
 	}
 }
 
@@ -34,7 +34,7 @@ func RenameSpecific(oldExt, newExt string) {
 	}
 	for _, file := range filesToRename {
 		newName := getNewName(file, oldExt, newExt)
-		rename(file, newName)
+		renameComplex(file, newName)
 	}
 }
 
@@ -46,7 +46,7 @@ func getNewName(file os.DirEntry, oldExt, newExt string) string {
 	return oldName[:len(oldName)-len(oldExt)] + newExt
 }
 
-func rename(file os.DirEntry, newName string) {
+func renameComplex(file os.DirEntry, newName string) {
 	oldName := file.Name()
 	fileExists := false
 	for _, existingFile := range existingFileNames {
@@ -56,15 +56,19 @@ func rename(file os.DirEntry, newName string) {
 		}
 	}
 	if !fileExists {
-		fmt.Printf("Renaming: %s > %s\n", oldName, newName)
-		err := os.Rename(oldName, newName)
-		if err != nil {
-			fmt.Printf("ERROR: %v\n", err)
-			os.Exit(1)
-		}
+		rename(oldName, newName)
 		existingFileNames = append(existingFileNames, newName)
 	} else {
 		fmt.Printf("Skipping: %s > %s - File already exists.\n", oldName, newName)
+	}
+}
+
+func rename(oldName string, newName string) {
+	fmt.Printf("Renaming: %s > %s\n", oldName, newName)
+	err := os.Rename(oldName, newName)
+	if err != nil {
+		fmt.Printf("ERROR: %v\n", err)
+		os.Exit(1)
 	}
 }
 
